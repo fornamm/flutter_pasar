@@ -23,39 +23,57 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
   // Data Dummy Produk
   final List<Map<String, dynamic>> _products = [
     {
-      'name': 'Kangkung Segar',
+      'name': 'Sayur Kangkung',
       'shop': 'Pak Tani Jaya',
       'price': 'Rp 5.000',
       'unit': '/ikat',
       'rating': '4.8',
-      'image': 'https://via.placeholder.com/150', // Ganti dengan aset gambar kamu nanti
+      'image': 'assets/kangkung.jpg', // Ganti dengan aset gambar kamu nanti
       'isPromo': false,
     },
     {
-      'name': 'Tomat Merah',
+      'name': 'Buah Tomat',
       'shop': 'Bu Sari Tani',
       'price': 'Rp 12.000',
       'unit': '/kg',
       'rating': '4.5',
-      'image': 'https://via.placeholder.com/150',
+      'image': 'assets/tomat.jpg', // Ganti dengan aset gambar kamu nanti
       'isPromo': false,
     },
     {
-      'name': 'Apel Fuji',
+      'name': 'Buah Apel',
       'shop': 'Toko Buah Makmur',
       'price': 'Rp 35.000',
       'unit': '/kg',
       'rating': '4.9',
-      'image': 'https://via.placeholder.com/150',
+      'image': 'assets/apel.jpg',
       'isPromo': true,
     },
     {
-      'name': 'Pisang Cavendish',
+      'name': 'Buah Pisang',
       'shop': 'Kebun Pisang',
       'price': 'Rp 18.000',
       'unit': '/sisir',
       'rating': '4.7',
-      'image': 'https://via.placeholder.com/150',
+      'image': 'assets/pisang.jpg',
+      'isPromo': false,
+    },
+    {
+      'name': 'Daging Sapi',
+      'shop': 'Daging Mantap',
+      'price': 'Rp 120.000',
+      'unit': '/kg',
+      'rating': '4.4',
+      'image': 'assets/daging.jpg',
+      'isPromo': false,
+    },
+    {
+      'name': 'Daging Ayam',
+      'shop': 'Daging Ayam Sehat',
+      'price': 'Rp 45.000',
+      'unit': '/ekor',
+      'rating': '4.6',
+      'image': 'assets/ayam.jpg',
       'isPromo': false,
     },
   ];
@@ -110,7 +128,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(color: Color(0xFF2E8B57)),
+                  borderSide: const BorderSide(color: Color.fromARGB(255, 46, 139, 87)),
                 ),
               ),
             ),
@@ -222,9 +240,9 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                                 color: Colors.grey[100],
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                                 image: DecorationImage(
-                                  image: NetworkImage(product['image']),
-                                  fit: BoxFit.cover, // Ganti ini nanti dengan AssetImage jika pakai aset lokal
-                                ),
+                                image: AssetImage(product['image']!), 
+                                fit: BoxFit.cover,
+                              ),
                               ),
                             ),
                             // Rating Badge

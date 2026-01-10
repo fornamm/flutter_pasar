@@ -1,11 +1,20 @@
+import 'package:device_preview/device_preview.dart'; // 1. Import ini
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart'; // Untuk font kustom
+import 'profile_screen.dart'; // <--- Tambahkan import ini
 import 'home_screen.dart'; //  Halaman Beranda
 import 'cart_screen.dart'; //  Halaman Keranjang
 import 'products_screen.dart'; //  Halaman Produk
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    // 3. Bungkus MyApp dengan DevicePreview
+    DevicePreview(
+      enabled: !kReleaseMode, // Hanya aktif saat debug (tidak saat rilis ke PlayStore)
+      builder: (context) => const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -16,6 +25,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'E-Pasar',
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
       theme: ThemeData(
         // Mengatur font default mirip desain (Google Fonts opsional)
         textTheme: GoogleFonts.poppinsTextTheme(),
@@ -45,7 +56,7 @@ class _MainNavigationState extends State<MainNavigation> {
     const HomeScreen(),        // Halaman Beranda
     const AllProductsScreen(), // Halaman Semua Produk
     const CartScreen(),        // Halaman Keranjang
-    const Center(child: Text("Halaman Profil")),
+    const ProfileScreen(),     // Halaman Profil
   ];
 
   @override
