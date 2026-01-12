@@ -196,7 +196,7 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.shopping_basket, size: 80, color: Colors.white24),
+          const Icon(Icons.shopping_basket, size: 80, color: Color.fromARGB(120, 255, 255, 255)),
         ],
       ),
     );
