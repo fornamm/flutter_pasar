@@ -1,8 +1,31 @@
 import 'package:flutter/material.dart';
-import 'products_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'dart:async'; // Import Timer untuk Notifikasi
 
-class HomeScreen extends StatelessWidget {
+import 'products_screen.dart';
+import 'cart_service.dart'; // Import Cart Service
+import 'login_service.dart'; // Import Auth Service
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  
+  // --- LOGIC NOTIFIKASI TOAST (TETAP ADA) ---
+  void _showTopNotification(String productName) {
+    late OverlayEntry overlayEntry;
+    overlayEntry = OverlayEntry(
+      builder: (context) => _ToastWidget(
+        message: "$productName masuk keranjang",
+        onDismissed: () => overlayEntry.remove(),
+      ),
+    );
+    Overlay.of(context).insert(overlayEntry);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,54 +35,50 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // BAGIAN HEADER (Hijau)
-            _buildHeader(),
+            _buildHeader(context), // Panggil Header
 
-            // BAGIAN KATEGORI
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
               child: Column(
                 children: [
-                  _buildSectionTitle("Kategori", onTap: () {}),
+                  _buildSectionTitle(context, "Kategori", onTap: () {
+                     Navigator.push(context, MaterialPageRoute(builder: (context) => const AllProductsScreen()));
+                  }),
                   const SizedBox(height: 20),
-                  _buildCategories(),
+                  _buildCategories(context),
                 ],
               ),
             ),
 
-            // BAGIAN BANNER PROMO
-            _buildPromoBanner(),
+            _buildPromoBanner(context),
 
-            // BAGIAN PRODUK TERLARIS
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 children: [
-                  _buildSectionTitle("Produk Terlaris", onTap: () {
-                    // Navigasi ke halaman All Products
-                    Navigator.push(
-                      context, 
-                      MaterialPageRoute(builder: (context) => const AllProductsScreen()) 
-                    );
+                  _buildSectionTitle(context, "Produk Terlaris", onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AllProductsScreen()));
                   }),
                   const SizedBox(height: 20),
-                  // Memanggil Grid Produk di sini
-                  _buildProductGrid(), 
+                  _buildProductGrid(),
                 ],
               ),
             ),
-            
-            const SizedBox(height: 20), // Spacer bawah
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  // --- WIDGET HELPER ---
+  // --- WIDGET HEADER (LOKASI MANUAL & NAMA USER) ---
+  Widget _buildHeader(BuildContext context) {
+    // 1. AMBIL DATA USER DARI SERVICE
+    final user = AuthService().currentUser;
+    
+    // 2. DEFINISIKAN NAMA (Jika tidak ada user, pakai "Tamu")
+    String displayName = user != null ? user['name']! : "Tamu";
 
-  // Widget Header Hijau
-  Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 50, 20, 25),
       decoration: const BoxDecoration(
@@ -75,12 +94,21 @@ class HomeScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text("Selamat datang,", style: TextStyle(color: Colors.white70, fontSize: 18)),
-                  Text("Tamu", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                ],
+              Expanded( 
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Selamat datang,", style: TextStyle(color: Colors.white70, fontSize: 18)),
+                    
+                    // NAMA USER
+                    Text(
+                      displayName, 
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
+                ),
               ),
               IconButton(
                 onPressed: () {},
@@ -89,25 +117,34 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 5),
+          
+          // LOKASI (MANUAL / STATIS)
           Row(
             children: const [
               Icon(Icons.location_on, color: Colors.white, size: 14),
               SizedBox(width: 4),
-              Text("Padang, Indonesia", style: TextStyle(color: Colors.white, fontSize: 16)),
+              Text(
+                "Padang, Indonesia", // Lokasi manual
+                style: TextStyle(color: Colors.white, fontSize: 14),
+              ),
             ],
           ),
           const SizedBox(height: 20),
+          
           TextField(
+            onSubmitted: (value) {
+              if (value.isNotEmpty) {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => AllProductsScreen(initialSearch: value)));
+              }
+            },
+            textInputAction: TextInputAction.search,
             decoration: InputDecoration(
               hintText: "Cari sayur, buah, dan lainnya...",
               prefixIcon: const Icon(Icons.search, color: Colors.grey),
               filled: true,
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide.none,
-              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
             ),
           ),
         ],
@@ -115,8 +152,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Widget Judul Section
-  Widget _buildSectionTitle(String title, {required VoidCallback onTap}) {
+  // --- WIDGET LAINNYA ---
+  Widget _buildSectionTitle(BuildContext context, String title, {required VoidCallback onTap}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -129,39 +166,42 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Widget List Kategori
-  Widget _buildCategories() {
+  Widget _buildCategories(BuildContext context) {
     final categories = [
-      {'icon': Icons.eco, 'label': 'Sayuran', 'color': Colors.green[100]},
-      {'icon': Icons.apple, 'label': 'Buah', 'color': Colors.red[100]},
-      {'icon': Icons.set_meal, 'label': 'Daging', 'color': Colors.red[100]},
-      {'icon': Icons.water_drop, 'label': 'Ikan', 'color': Colors.blue[100]},
-      {'icon': Icons.local_fire_department, 'label': 'Bumbu', 'color': Colors.orange[100]},
+      {'icon': Icons.eco, 'label': 'Sayuran'},
+      {'icon': Icons.apple, 'label': 'Buah-buahan'},
+      {'icon': Icons.set_meal, 'label': 'Daging'},
+      {'icon': Icons.water_drop, 'label': 'Ikan'},
+      {'icon': Icons.local_fire_department, 'label': 'Bumbu'},
     ];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: categories.map((cat) {
-        return Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5)],
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => AllProductsScreen(initialCategory: cat['label'] as String)));
+          },
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5)],
+                ),
+                child: Icon(cat['icon'] as IconData, color: const Color(0xFF2E8B57)),
               ),
-              child: Icon(cat['icon'] as IconData, color: const Color(0xFF2E8B57)),
-            ),
-            const SizedBox(height: 8),
-            Text(cat['label'] as String, style: const TextStyle(fontSize: 12)),
-          ],
+              const SizedBox(height: 8),
+              Text(cat['label'] as String, style: const TextStyle(fontSize: 12)),
+            ],
+          ),
         );
       }).toList(),
     );
   }
 
-  // Widget Banner Promo
-  Widget _buildPromoBanner() {
+  Widget _buildPromoBanner(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       padding: const EdgeInsets.all(20),
@@ -185,7 +225,9 @@ class HomeScreen extends StatelessWidget {
                 const Text("Untuk pembelian pertama", style: TextStyle(color: Color.fromARGB(190, 255, 255, 255), fontSize: 14)),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AllProductsScreen()));
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: const Color.fromARGB(255, 46, 139, 87),
@@ -202,27 +244,21 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Widget Grid Produk (YANG BARU DITAMBAHKAN)
   Widget _buildProductGrid() {
     final products = [
       {'name': 'Sayur Kangkung', 'shop': 'Pak Tani Jaya', 'price': 'Rp 5.000', 'image': 'assets/kangkung.jpg'},
       {'name': 'Buah Tomat', 'shop': 'Bu Sari Tani', 'price': 'Rp 12.000', 'image': 'assets/tomat.jpg'},
       {'name': 'Buah Apel', 'shop': 'Toko Buah Makmur', 'price': 'Rp 35.000', 'image': 'assets/apel.jpg'},
       {'name': 'Buah Pisang', 'shop': 'Kebun Pisang', 'price': 'Rp 18.000', 'image': 'assets/pisang.jpg'},
-      {'name': 'Daging Sapi', 'shop': 'Daging Segar', 'price': 'Rp 120.000', 'image': 'assets/daging.jpg'},
-      {'name': 'Daging Ayam', 'shop': 'Ayam Kampung', 'price': 'Rp 45.000', 'image': 'assets/ayam.jpg'},
     ];
 
     return GridView.builder(
       padding: EdgeInsets.zero,
-      shrinkWrap: true, // PENTING: Agar tidak crash
-      physics: const NeverScrollableScrollPhysics(), // Scroll ikut halaman utama
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: products.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.75,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisCount: 2, childAspectRatio: 0.75, crossAxisSpacing: 16, mainAxisSpacing: 16,
       ),
       itemBuilder: (context, index) {
         final product = products[index];
@@ -230,13 +266,7 @@ class HomeScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 5,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5, offset: const Offset(0, 2))],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,10 +276,7 @@ class HomeScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                    image: DecorationImage(
-                      image: NetworkImage(product['image']!),
-                      fit: BoxFit.cover,
-                    ),
+                    image: DecorationImage(image: AssetImage(product['image']!), fit: BoxFit.cover),
                   ),
                 ),
               ),
@@ -258,31 +285,24 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      product['name']!, 
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      product['shop']!, 
-                      style: const TextStyle(color: Colors.grey, fontSize: 10)
-                    ),
+                    Text(product['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(product['shop']!, style: const TextStyle(color: Colors.grey, fontSize: 10)),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          product['price']!, 
-                          style: const TextStyle(color: Color(0xFF2E8B57), fontWeight: FontWeight.bold)
-                        ),
+                        Text(product['price']!, style: const TextStyle(color: Color(0xFF2E8B57), fontWeight: FontWeight.bold)),
                         Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF2E8B57), 
-                            shape: BoxShape.circle
+                          width: 30, height: 30,
+                          decoration: const BoxDecoration(color: Color(0xFF2E8B57), shape: BoxShape.circle),
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(Icons.add, color: Colors.white, size: 16),
+                            onPressed: () {
+                                CartService().addToCart(product);
+                                _showTopNotification(product['name']!);
+                            },
                           ),
-                          child: const Icon(Icons.add, color: Colors.white, size: 16),
                         )
                       ],
                     ),
@@ -293,6 +313,73 @@ class HomeScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+// Widget Toast (Animasi Notifikasi)
+class _ToastWidget extends StatefulWidget {
+  final String message;
+  final VoidCallback onDismissed;
+  const _ToastWidget({required this.message, required this.onDismissed});
+  @override
+  State<_ToastWidget> createState() => _ToastWidgetState();
+}
+
+class _ToastWidgetState extends State<_ToastWidget> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _offsetAnimation;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(duration: const Duration(milliseconds: 600), vsync: this);
+    _offsetAnimation = Tween<Offset>(begin: const Offset(1.2, 0.0), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) _controller.forward();
+    });
+
+    _timer = Timer(const Duration(milliseconds: 2500), () {
+      if (mounted) _controller.reverse().then((value) => widget.onDismissed());
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 60, right: 16,
+      child: Material(
+        color: Colors.transparent,
+        child: SlideTransition(
+          position: _offsetAnimation,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2E8B57),
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 10, offset: const Offset(0, 4))],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 10),
+                Text(widget.message, style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

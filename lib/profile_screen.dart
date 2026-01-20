@@ -1,17 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'login.dart'; // Import halaman Login yang sudah kita buat
+import 'login.dart'; 
+import 'login_service.dart'; // Import AuthService
+import 'history_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({Key? key}) : super(key: key);
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
-
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Simulasi status login (Ubah jadi true untuk melihat tampilan sesudah login)
   bool isLoggedIn = false; 
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  void _checkLoginStatus() {
+    final currentUser = AuthService().currentUser;
+    if (currentUser != null) {
+      setState(() {
+        isLoggedIn = true;
+      });
+    } else {
+      setState(() {
+        isLoggedIn = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: Colors.grey[50],
       body: Stack(
         children: [
-          // LAYER 1: Header Hijau (Background)
+          // LAYER 1: Header Hijau
           Container(
             height: 250,
             width: double.infinity,
@@ -34,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center, // Center title
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       "Profil",
@@ -50,9 +68,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          // LAYER 2: Konten Utama (Mengambang)
+          // LAYER 2: Konten Utama
           Padding(
             padding: const EdgeInsets.only(top: 120, left: 20, right: 20),
+            // Cek status login untuk menentukan tampilan
             child: isLoggedIn ? _buildLoggedInView() : _buildGuestView(),
           ),
         ],
@@ -60,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // TAMPILAN 1: Jika Belum Login (Sesuai Screenshot Kamu)
+  // --- TAMPILAN TAMU (BELUM LOGIN) ---
   Widget _buildGuestView() {
     return Container(
       width: double.infinity,
@@ -104,17 +123,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 24),
           
-          // Tombol Masuk / Daftar
+          // --- TOMBOL MASUK / DAFTAR ---
           SizedBox(
             width: double.infinity,
             height: 45,
             child: ElevatedButton(
-              onPressed: () {
-                // Arahkan ke halaman AuthScreen
-                Navigator.push(
+              onPressed: () async {
+                // 1. Buka halaman AuthScreen dan tunggu hasil
+                // Pastikan class AuthScreen ada di file login.dart
+                final result = await Navigator.push(
                   context, 
                   MaterialPageRoute(builder: (context) => const AuthScreen())
                 );
+
+                // 2. CEK MOUNTED (PENTING AGAR TIDAK ERROR)
+                // Jika user keluar aplikasi saat loading, hentikan proses
+                if (!mounted) return;
+
+                // 3. Jika hasil login sukses (true)
+                if (result == true) {
+                  setState(() {
+                    isLoggedIn = true;
+                  });
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Berhasil masuk!"),
+                      backgroundColor: Color(0xFF2E8B57),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2E8B57),
@@ -126,13 +165,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
+          // -----------------------------
+          
           const SizedBox(height: 12),
           
-          // Tombol Simulasi Login (Hanya untuk demo development)
+          // Tombol Simulasi (Bisa dihapus jika sudah tidak perlu)
           OutlinedButton(
             onPressed: () {
               setState(() {
-                isLoggedIn = true; // Ubah state jadi login
+                isLoggedIn = true; 
               });
             },
             style: OutlinedButton.styleFrom(
@@ -150,8 +191,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // TAMPILAN 2: Jika Sudah Login (Menu Profil Lengkap)
+ // --- TAMPILAN USER (SUDAH LOGIN) ---
   Widget _buildLoggedInView() {
+    // Ambil data user yang sedang login
+    final user = AuthService().currentUser;
+
     return Column(
       children: [
         // Kartu Profil
@@ -168,7 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               const CircleAvatar(
                 radius: 30,
-                backgroundImage: NetworkImage('https://via.placeholder.com/150'), // Ganti foto profil
+                backgroundImage: NetworkImage('https://via.placeholder.com/150'), 
                 backgroundColor: Colors.grey,
               ),
               const SizedBox(width: 16),
@@ -176,11 +220,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "User E-Pasar",
+                    // Tampilkan Nama Asli (Default: User jika null)
+                    user?['name'] ?? "User E-Pasar", 
                     style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    "user@epasar.com",
+                    // Tampilkan Email Asli
+                    user?['email'] ?? "user@epasar.com",
                     style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                 ],
@@ -203,15 +249,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           child: Column(
             children: [
-              _buildMenuItem(Icons.shopping_bag_outlined, "Riwayat Pesanan", () {}),
+              _buildMenuItem(Icons.shopping_bag_outlined, "Riwayat Pesanan", () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HistoryScreen()),
+                );
+              }),
               _buildMenuItem(Icons.location_on_outlined, "Alamat Saya", () {}),
               _buildMenuItem(Icons.favorite_border, "Wishlist", () {}),
               _buildMenuItem(Icons.help_outline, "Bantuan", () {}),
               const Divider(height: 1),
               _buildMenuItem(Icons.logout, "Keluar", () {
+                // LOGIC LOGOUT
+                AuthService().logout(); // Hapus sesi di service
                 setState(() {
-                  isLoggedIn = false; // Kembali ke mode tamu
+                  isLoggedIn = false; // Kembali jadi Tamu di UI
                 });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Berhasil keluar")),
+                );
               }, isRed: true),
             ],
           ),
@@ -220,7 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Widget Helper untuk Menu Item
+// Widget Helper Menu Item
   Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap, {bool isRed = false}) {
     return ListTile(
       leading: Container(
