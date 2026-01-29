@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:async'; // Import Timer untuk Notifikasi
+import 'dart:async';
 
 import 'products_screen.dart';
-import 'cart_service.dart'; // Import Cart Service
-import 'login_service.dart'; // Import Auth Service
+import 'cart_service.dart';
+import 'login_service.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Function(int)? onTabChange;
+  const HomeScreen({super.key, this.onTabChange});
+  
+
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  
-  // --- LOGIC NOTIFIKASI TOAST (TETAP ADA) ---
   void _showTopNotification(String productName) {
     late OverlayEntry overlayEntry;
     overlayEntry = OverlayEntry(
@@ -70,13 +71,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  // --- WIDGET HEADER (LOKASI MANUAL & NAMA USER) ---
   Widget _buildHeader(BuildContext context) {
     // 1. AMBIL DATA USER DARI SERVICE
     final user = AuthService().currentUser;
     
-    // 2. DEFINISIKAN NAMA (Jika tidak ada user, pakai "Tamu")
     String displayName = user != null ? user['name']! : "Tamu";
 
     return Container(
@@ -110,15 +108,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-              )
+  
             ],
           ),
           const SizedBox(height: 5),
-          
-          // LOKASI (MANUAL / STATIS)
           Row(
             children: const [
               Icon(Icons.location_on, color: Colors.white, size: 14),
@@ -152,7 +145,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- WIDGET LAINNYA ---
   Widget _buildSectionTitle(BuildContext context, String title, {required VoidCallback onTap}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -226,7 +218,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AllProductsScreen()));
+                    if (widget.onTabChange != null) {
+                      widget.onTabChange!(1); 
+                    } else {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const AllProductsScreen()));
+                    }
+                    // -----------------------------
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -317,7 +314,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Widget Toast (Animasi Notifikasi)
 class _ToastWidget extends StatefulWidget {
   final String message;
   final VoidCallback onDismissed;

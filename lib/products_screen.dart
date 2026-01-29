@@ -37,6 +37,25 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
     {'name': 'Buah Pisang', 'shop': 'Kebun Pisang', 'price': 'Rp 18.000', 'image': 'assets/pisang.jpg', 'category': 'Buah-buahan', 'isPromo': false},
     {'name': 'Daging Sapi', 'shop': 'Daging Mantap', 'price': 'Rp 120.000', 'image': 'assets/daging.jpg', 'category': 'Daging', 'isPromo': false},
     {'name': 'Daging Ayam', 'shop': 'Daging Ayam Sehat', 'price': 'Rp 45.000', 'image': 'assets/ayam.jpg', 'category': 'Daging', 'isPromo': false},
+    {'name': 'Daging Ikan', 'shop': 'Daging Ikan Segar', 'price': 'Rp 40.000', 'image': 'assets/ikan.jpg', 'category': 'Ikan', 'isPromo': false},
+    {'name': 'Telur Ayam', 'shop': 'Telur Ayam Besar', 'price': 'Rp 25.000', 'image': 'assets/telur.jpg', 'category': 'Daging', 'isPromo': false},
+    {'name': 'Bawang Merah', 'shop': 'Bawang Merah Segar', 'price': 'Rp 15.000', 'image': 'assets/bawmer.jpg', 'category': 'Bumbu', 'isPromo': false},
+    {'name': 'Bawang Putih', 'shop': 'Bawang Putih Segar', 'price': 'Rp 12.000', 'image': 'assets/bawput.jpg', 'category': 'Bumbu', 'isPromo': false},
+    {'name': 'Cabai Merah', 'shop': 'Cabai Merah Segar', 'price': 'Rp 20.000', 'image': 'assets/cabmer.jpg', 'category': 'Bumbu', 'isPromo': false},
+    {'name': 'Cabai Hijau', 'shop': 'Cabai Hijau Segar', 'price': 'Rp 20.000', 'image': 'assets/cabhijau.jpg', 'category': 'Bumbu', 'isPromo': false},
+    {'name': 'Cengkeh', 'shop': 'Cengkeh Berkualitas', 'price': 'Rp 25.000', 'image': 'assets/cengkeh.jpg', 'category': 'Bumbu', 'isPromo': false},
+    {'name': 'Daun Bawang', 'shop': 'Daun Bawang Segar', 'price': 'Rp 10.000', 'image': 'assets/daunbaw.jpg', 'category': 'Bumbu', 'isPromo': false},
+    {'name': 'Jagung', 'shop': 'Jagung Segar', 'price': 'Rp 15.000', 'image': 'assets/jagung.jpg', 'category': 'Buah-buahan', 'isPromo': false},
+    {'name': 'Jahe', 'shop': 'Jahe Segar', 'price': 'Rp 20.000', 'image': 'assets/jahe.jpg', 'category': 'Bumbu', 'isPromo': false},
+    {'name': 'Jamur', 'shop': 'Jamur Segar', 'price': 'Rp 25.000', 'image': 'assets/jamur.jpg', 'category': 'Sayuran', 'isPromo': false},
+    {'name': 'Kayu Manis', 'shop': 'Kayu Manis Segar', 'price': 'Rp 30.000', 'image': 'assets/kayumanis.jpg', 'category': 'Bumbu', 'isPromo': false},
+    {'name': 'Kecap', 'shop': 'Kecap Bango', 'price': 'Rp 15.000', 'image': 'assets/kecap.jpg', 'category': 'Bumbu', 'isPromo': false},
+    {'name': 'Kelapa', 'shop': 'Kelapa Segar', 'price': 'Rp 7.000', 'image': 'assets/kelapa.jpg', 'category': 'Buah-buahan', 'isPromo': false},
+    {'name': 'Kentang', 'shop': 'Kentang Segar', 'price': 'Rp 10.000', 'image': 'assets/kentang.jpg', 'category': 'Sayuran', 'isPromo': false},
+    {'name': 'Minyak Goreng', 'shop': 'Minyak Goreng Kelapa', 'price': 'Rp 20.000', 'image': 'assets/minyakgor.jpg', 'category': 'Bumbu', 'isPromo': false},
+    {'name': 'Sambal', 'shop': 'Sambal ABC Segar', 'price': 'Rp 6.000', 'image': 'assets/sambal.jpg', 'category': 'Bumbu', 'isPromo': false},
+    {'name': 'Serai', 'shop': 'Serai Segar', 'price': 'Rp 4.000', 'image': 'assets/serai.jpg', 'category': 'Bumbu', 'isPromo': false},
+    {'name': 'Terong', 'shop': 'Terong Segar', 'price': 'Rp 15.000', 'image': 'assets/terong.jpg', 'category': 'Sayuran', 'isPromo': false},
   ];
 
   List<Map<String, dynamic>> _foundProducts = [];
@@ -86,25 +105,20 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
     setState(() => _foundProducts = results);
   }
 
-  // --- FUNGSI UNTUK MEMUNCULKAN NOTIFIKASI KANAN ATAS ---
   void _showTopNotification(String productName) {
-    // Membuat Overlay Entry (Widget yang mengambang)
     late OverlayEntry overlayEntry;
 
     overlayEntry = OverlayEntry(
       builder: (context) => _ToastWidget(
         message: "$productName masuk keranjang",
         onDismissed: () {
-          // Hapus overlay ketika animasi selesai
           overlayEntry.remove();
         },
       ),
     );
 
-    // Masukkan ke layar
     Overlay.of(context).insert(overlayEntry);
   }
-  // -------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -121,14 +135,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
               )
             : null,
         title: Text("Semua Produk", style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.bold)),
-        actions: [ 
-          IconButton(
-            icon: const Icon(Icons.filter_list, color: Colors.black),
-            onPressed: () {
-              // Aksi filter (Opsional untuk nanti)
-            },
-          ),
-        ],
+        actions: [ ],
       ),
       body: Column(
         children: [
@@ -254,14 +261,11 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                                     child: IconButton(
                                       padding: EdgeInsets.zero,
                                       icon: const Icon(Icons.add, color: Colors.white, size: 20),
-                                      
-                                      // --- PANGGIL NOTIFIKASI DI SINI ---
                                       onPressed: () {
                                         CartService().addToCart(product);
                                         // Ganti SnackBar biasa dengan Custom Toast
                                         _showTopNotification(product['name']);
                                       },
-                                      // ----------------------------------
                                       
                                     ),
                                   ),

@@ -1,17 +1,16 @@
-import 'package:device_preview/device_preview.dart'; // 1. Import ini
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; // Untuk font kustom
-import 'profile_screen.dart'; // <--- Tambahkan import ini
-import 'home_screen.dart'; //  Halaman Beranda
-import 'cart_screen.dart'; //  Halaman Keranjang
-import 'products_screen.dart'; //  Halaman Produk
+import 'package:google_fonts/google_fonts.dart';
+import 'profile_screen.dart';
+import 'home_screen.dart';
+import 'cart_screen.dart';
+import 'products_screen.dart';
 
 void main() {
   runApp(
-    // 3. Bungkus MyApp dengan DevicePreview
     DevicePreview(
-      enabled: !kReleaseMode, // Hanya aktif saat debug (tidak saat rilis ke PlayStore)
+      enabled: !kReleaseMode,
       builder: (context) => const MyApp(),
     ),
   );
@@ -28,10 +27,9 @@ class MyApp extends StatelessWidget {
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
       theme: ThemeData(
-        // Mengatur font default mirip desain (Google Fonts opsional)
         textTheme: GoogleFonts.poppinsTextTheme(),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2E8B57), // Warna Hijau Utama E-Pasar
+          seedColor: const Color(0xFF2E8B57),
           primary: const Color(0xFF2E8B57),
         ),
         useMaterial3: true,
@@ -47,29 +45,35 @@ class MainNavigation extends StatefulWidget {
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
-
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
 
-  // List halaman sementara
-  final List<Widget> _pages = [
-    const HomeScreen(),        // Halaman Beranda
-    const AllProductsScreen(), // Halaman Semua Produk
-    const CartScreen(),        // Halaman Keranjang
-    const ProfileScreen(),     // Halaman Profil
-  ];
+void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
+    final List<Widget> pages = [
+      HomeScreen(
+        onTabChange: (index) {
           setState(() {
             _selectedIndex = index;
           });
         },
+      ),
+      const AllProductsScreen(), 
+      const CartScreen(), 
+      const ProfileScreen(), 
+    ];
+    return Scaffold(
+      body: pages[_selectedIndex], 
+      
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color(0xFF2E8B57),
         unselectedItemColor: Colors.grey,

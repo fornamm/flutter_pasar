@@ -181,7 +181,6 @@ class _CartScreenState extends State<CartScreen> {
                 icon: const Icon(Icons.delete_outline, color: Colors.red),
                 onPressed: () {
                   setState(() {
-                    CartService().removeFromCart(item);
                   });
                 },
               )

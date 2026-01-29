@@ -35,6 +35,7 @@ dependencies:
   
   cupertino_icons: ^1.0.8
   device_preview: ^1.3.1
+  image_picker: ^1.2.1
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +71,25 @@ flutter:
     - assets/pisang.jpg
     - assets/daging.jpg
     - assets/ayam.jpg
+    - assets/jahe.jpg
+    - assets/jamur.jpg
+    - assets/jagung.jpg
+    - assets/kayumanis.jpg
+    - assets/kecap.jpg
+    - assets/kelapa.jpg
+    - assets/kentang.jpg
+    - assets/minyakgor.jpg
+    - assets/sambal.jpg
+    - assets/serai.jpg
+    - assets/terong.jpg
+    - assets/bawmer.jpg
+    - assets/bawput.jpg
+    - assets/cabmer.jpg
+    - assets/cabhijau.jpg
+    - assets/cengkeh.jpg
+    - assets/daunbaw.jpg
+    - assets/telur.jpg
+    - assets/ikan.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

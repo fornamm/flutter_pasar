@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'order_service.dart'; // Import Service
+import 'order_service.dart';
+import 'cart_service.dart';
+import 'cart_screen.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -139,14 +141,35 @@ class HistoryScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              
+              // --- TOMBOL BELI LAGI ---
               OutlinedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // 1. Loop semua barang di history ini dan masukkan ke Cart
+                  for (var item in order['items']) {
+                    CartService().addToCart(item);
+                  }
+
+                  // 2. Beri Notifikasi
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Produk berhasil ditambahkan ke Keranjang"),
+                      backgroundColor: Color(0xFF2E8B57),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CartScreen()),
+                  );
+                },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFF2E8B57)),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
                 child: const Text("Beli Lagi", style: TextStyle(color: Color(0xFF2E8B57), fontSize: 12)),
               )
+              // -------------------------
             ],
           )
         ],

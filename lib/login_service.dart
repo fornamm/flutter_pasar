@@ -6,6 +6,28 @@ class AuthService {
   factory AuthService() => _instance;
   AuthService._internal();
 
+  void loginDev() {
+    _currentUser = {
+      'name': 'Developer Mode',
+      'email': 'dev@testing.com',
+      'password': 'dev',
+    };
+  }
+
+  // Di dalam file login_service.dart / auth_service.dart
+void updateProfile(String newName, String newEmail) {
+  if (_currentUser != null) {
+    _currentUser!['name'] = newName;
+    _currentUser!['email'] = newEmail;
+  }
+}
+
+void updatePhoto(String imagePath) {
+    if (_currentUser != null) {
+      _currentUser!['image'] = imagePath; // Simpan alamat file foto
+    }
+  }
+
   // 1. Database User Sementara (Simpan Nama, Email, Password)
   final List<Map<String, String>> _users = [];
 
