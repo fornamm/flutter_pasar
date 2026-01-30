@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'cart_service.dart'; // Import service
-import 'main.dart'; // Import main agar bisa reset ke Home
+import 'cart_service.dart';
+import 'main.dart';
 import 'order_service.dart';
 
 class CartScreen extends StatefulWidget {
@@ -13,12 +13,10 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   
-  // --- LOGIC CHECKOUT SIMULASI ---
   void _handleCheckout() async {
-    // 1. Tampilkan Dialog Loading
     showDialog(
       context: context,
-      barrierDismissible: false, // User gabisa klik luar untuk tutup
+      barrierDismissible: false,
       builder: (context) => const Center(
         child: CircularProgressIndicator(
           color: Color(0xFF2E8B57),
@@ -26,14 +24,12 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
 
-    // 2. Simulasi Delay Network (2 Detik)
+
     await Future.delayed(const Duration(seconds: 2));
 
-    // 3. Tutup Dialog Loading
     if (!mounted) return;
     Navigator.pop(context); 
 
-    // 4. Tampilkan Dialog Sukses
     showDialog(
       context: context,
       builder: (context) {
@@ -61,15 +57,16 @@ class _CartScreenState extends State<CartScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     final items = CartService().items;
-                    final total = CartService().getTotalPrice();
+                    final totalString = CartService().getTotalPrice();
+                    final total = int.parse(totalString);
 
                     OrderService().placeOrder(items, total);
-                    CartService().clearCart(); // Kosongkan data
+                    CartService().clearCart();
                     
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(builder: (context) => const MainNavigation()),
-                      (route) => false, // Hapus semua riwayat halaman sebelumnya
+                      (route) => false,
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -85,11 +82,10 @@ class _CartScreenState extends State<CartScreen> {
       },
     );
   }
-  // ------------------------------------------------
+
 
   @override
   Widget build(BuildContext context) {
-    // Ambil data terbaru dari CartService
     final cartItems = CartService().items;
 
     return Scaffold(
@@ -103,17 +99,14 @@ class _CartScreenState extends State<CartScreen> {
           style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
-      // Cek: Jika kosong tampilkan UI Kosong, Jika ada isi tampilkan List
       body: cartItems.isEmpty 
           ? _buildEmptyCart() 
           : _buildCartList(cartItems),
       
-      // Bottom Bar Total Harga (Hanya muncul jika ada barang)
       bottomNavigationBar: cartItems.isEmpty ? null : _buildBottomSummary(),
     );
   }
 
-  // Tampilan Jika Kosong
   Widget _buildEmptyCart() {
     return Center(
       child: Padding(
@@ -136,7 +129,6 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  // Tampilan Jika Ada Barang (List Belanja)
   Widget _buildCartList(List<Map<String, dynamic>> items) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -154,7 +146,6 @@ class _CartScreenState extends State<CartScreen> {
           ),
           child: Row(
             children: [
-              // Gambar Kecil
               Container(
                 width: 60, height: 60,
                 decoration: BoxDecoration(
@@ -166,7 +157,6 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              // Detail
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,12 +166,21 @@ class _CartScreenState extends State<CartScreen> {
                   ],
                 ),
               ),
-              // Tombol Hapus
+              
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.red),
                 onPressed: () {
                   setState(() {
+                    CartService().removeFromCart(item);
                   });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("${item['name']} dihapus"),
+                      duration: const Duration(seconds: 1),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
                 },
               )
             ],
@@ -191,9 +190,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  // Bagian Bawah (Total Harga)
   Widget _buildBottomSummary() {
-    // Format Rupiah sederhana
     final total = CartService().getTotalPrice();
     
     return Container(
@@ -214,7 +211,6 @@ class _CartScreenState extends State<CartScreen> {
             ],
           ),
           ElevatedButton(
-            // Panggil Fungsi Checkout di sini
             onPressed: _handleCheckout, 
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2E8B57),
